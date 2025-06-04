@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cloud Code Saver (Firebase)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FFA000; /* Firebase Orange */
+            --primary-variant-color: #F57C00;
+            --secondary-color: #039BE5; /* Firebase Blue */
+            --background-color: #ECEFF1; /* Firebase Background Grey */
+            --surface-color: #ffffff;
+            --on-primary-color: #ffffff;
+            --on-surface-color: #212121;
+            --border-color: #CFD8DC;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --font-family: 'Poppins', sans-serif;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --box-shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.12);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--on-surface-color);
+            line-height: 1.6;
+        }
+
+        #pageLoginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex; /* Initially shown */
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+        .login-box {
+            background-color: var(--surface-color);
+            padding: 30px 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-hover);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        .login-box h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .login-box input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+            font-size: 1em;
+        }
+        .login-box input[type="password"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 160, 0, 0.2);
+        }
+        #loginErrorMessage {
+            color: var(--danger-color);
+            margin-top: 10px;
+            font-size: 0.9em;
+            min-height: 1.2em; /* To prevent layout shift */
+        }
+
+
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 30px;
+            background: var(--surface-color);
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            display: none; /* Initially hidden */
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin: 0 0 10px 0;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .form-section {
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 160, 0, 0.2);
+        }
+
+        textarea {
+            height: 160px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            resize: vertical;
+        }
+
+        .button {
+            background-color: var(--primary-color);
+            color: var(--on-primary-color);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .button:hover {
+            background-color: var(--primary-variant-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .button:disabled {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
+        .button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        .search-section svg {
+            color: #777;
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 10px 0;
+            border: none;
+            outline: none;
+            font-size: 1.05em;
+            background-color: transparent;
+            font-family: var(--font-family);
+        }
+        #searchInput::placeholder {
+            color: #999;
+        }
+
+        h2.section-title {
+            font-size: 1.8em;
+            color: var(--primary-variant-color);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-align: left;
+            border-bottom: 2px solid #FFCC80;
+            padding-bottom: 10px;
+        }
+
+        #snippetGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .snippet-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--box-shadow);
+        }
+        .snippet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
+        }
+        .snippet-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            font-size: 1.25em;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .snippet-card p.code-preview {
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            color: #555;
+            background-color: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            margin-bottom: 18px;
+            min-height: 70px;
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .card-actions .button.icon-button {
+            background-color: transparent;
+            color: var(--danger-color);
+            padding: 8px;
+            min-width: auto;
+        }
+         .card-actions .button.icon-button:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        .card-actions .button.icon-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        .no-snippets, .loading-snippets {
+            text-align: center;
+            padding: 30px;
+            color: #777;
+            font-size: 1.1em;
+            grid-column: 1 / -1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            padding-top: 20px;
+        }
+        .modal-content {
+            background-color: var(--surface-color);
+            margin: 2% auto;
+            padding: 30px;
+            border: none;
+            width: 90%;
+            max-width: 800px;
+            border-radius: var(--border-radius);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--primary-variant-color);
+            font-weight: 600;
+        }
+        .close-button {
+            color: #aaa;
+            background: none;
+            border: none;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 5px;
+            transition: color 0.2s;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--on-surface-color);
+        }
+        .modal-body pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 60vh;
+            font-family: 'Consolas', 'Menlo', 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+            line-height: 1.7;
+        }
+        .modal-actions {
+            margin-top: 25px;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .modal-actions .button {
+            background-color: var(--secondary-color);
+            color: var(--on-primary-color); 
+            gap: 6px;
+        }
+        .modal-actions .button:hover {
+            background-color: #0288D1;
+        }
+        .copied-feedback {
+            display: inline-block;
+            margin-left: 15px;
+            color: var(--success-color);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1002;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateY(20px);
+        }
+        .toast.success { background-color: var(--success-color); }
+        .toast.danger { background-color: var(--danger-color); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <div id="pageLoginOverlay">
+        <div class="login-box">
+            <h2>Access Code Library</h2>
+            <input type="password" id="accessPasswordInput" placeholder="Enter Access Password">
+            <button id="accessSubmitButton" class="button">Enter</button>
+            <p id="loginErrorMessage"></p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>My Cloud Code Library</h1>
+            <p>Save your code snippets to Firebase and access them from any device.</p>
+        </header>
+
+        <section class="form-section">
+            <label for="snippetTitle">Code Title:</label>
+            <input type="text" id="snippetTitle" placeholder="e.g., Advanced JavaScript Function">
+
+            <label for="snippetCode">Your Code:</label>
+            <textarea id="snippetCode" placeholder="Write or paste your code here..."></textarea>
+
+            <button class="button" id="saveSnippetButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                    <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2z"/>
+                </svg>
+                Save to Cloud
+            </button>
+        </section>
+        
+        <h2 class="section-title">Your Saved Codes</h2>
+
+        <div class="search-section">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search code by title...">
+        </div>
+
+        <div id="snippetGrid">
+            <!-- Snippets will be loaded here -->
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"></h2>
+                <button class="close-button" id="modalCloseButton">×</button>
+            </div>
+            <div class="modal-body">
+                <pre><code id="modalCode"></code></pre>
+            </div>
+            <div class="modal-actions">
+                <button class="button" id="modalCopyButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                    </svg>
+                    Copy
+                </button>
+                <span class="copied-feedback" id="modalCopiedFeedback"></span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgDx7rde7NlhYlv06nngAELk1Ed1DeD8A", // Replace with your actual API key if needed
+            authDomain: "code-saver-62f1f.firebaseapp.com",
+            databaseURL: "https://code-saver-62f1f-default-rtdb.firebaseio.com",
+            projectId: "code-saver-62f1f",
+            storageBucket: "code-saver-62f1f.appspot.com",
+            messagingSenderId: "168784606162",
+            appId: "1:168784606162:web:4339f060537e2b91c44e0b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const snippetsRef = ref(database, 'snippets');
+
+        // Page Access Elements and Logic
+        const pageLoginOverlay = document.getElementById('pageLoginOverlay');
+        const accessPasswordInput = document.getElementById('accessPasswordInput');
+        const accessSubmitButton = document.getElementById('accessSubmitButton');
+        const loginErrorMessage = document.getElementById('loginErrorMessage');
+        const mainContainer = document.querySelector('.container');
+
+        const PAGE_ACCESS_PASSWORD = "webfactory";
+        const DELETE_ACTION_PASSWORD = "hasan..mim";
+        const PAGE_ACCESS_GRANTED_KEY = "codeSaverPageAccessGranted";
+
+
+        // Main App Elements
+        const snippetTitleInput = document.getElementById('snippetTitle');
+        const snippetCodeInput = document.getElementById('snippetCode');
+        const saveButton = document.getElementById('saveSnippetButton');
+        const snippetGridDiv = document.getElementById('snippetGrid');
+        const searchInput = document.getElementById('searchInput');
+
+        const codeModal = document.getElementById('codeModal');
+        const modalTitleEl = document.getElementById('modalTitle');
+        const modalCodeEl = document.getElementById('modalCode');
+        const modalCopyButton = document.getElementById('modalCopyButton');
+        const modalCloseButton = document.getElementById('modalCloseButton');
+        const modalCopiedFeedback = document.getElementById('modalCopiedFeedback');
+
+        let currentSnippetCodeForModalCopy = null;
+        let allSnippetsData = {}; 
+
+        function grantPageAccess() {
+            sessionStorage.setItem(PAGE_ACCESS_GRANTED_KEY, "true");
+            pageLoginOverlay.style.display = 'none';
+            mainContainer.style.display = 'block';
+            loginErrorMessage.textContent = '';
+            loadSnippetsFromFirebase(); 
+        }
+
+        function checkPageAccess() {
+            if (sessionStorage.getItem(PAGE_ACCESS_GRANTED_KEY) === "true") {
+                grantPageAccess();
+            } else {
+                pageLoginOverlay.style.display = 'flex';
+                mainContainer.style.display = 'none';
+                accessPasswordInput.focus();
+            }
+        }
+
+        accessSubmitButton.addEventListener('click', () => {
+            const enteredPassword = accessPasswordInput.value;
+            if (enteredPassword === PAGE_ACCESS_PASSWORD) {
+                grantPageAccess();
+            } else {
+                loginErrorMessage.textContent = "Incorrect password. Please try again.";
+                accessPasswordInput.value = '';
+                accessPasswordInput.focus();
+            }
+        });
+
+        accessPasswordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission if it were in a form
+                accessSubmitButton.click();
+            }
+        });
+
+
+        // Event Listeners for main app (setup after DOMContentLoaded)
+        saveButton.addEventListener('click', saveSnippetToFirebase);
+        searchInput.addEventListener('input', renderSnippets);
+        modalCloseButton.addEventListener('click', closeModal);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            checkPageAccess(); // This will handle showing login or main content
+            // Other listeners are already attached above or will be inside functions
+        });
+
+        async function saveSnippetToFirebase() {
+            const title = snippetTitleInput.value.trim();
+            const code = snippetCodeInput.value.trim();
+
+            if (!title || !code) {
+                showToast('Please enter both title and code.', 'danger');
+                return;
+            }
+
+            saveButton.disabled = true;
+            saveButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hourglass-split" viewBox="0 0 16 16">
+                    <path d="M2.5 15a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443-.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11zm2-13v1c0 .537.12 1.045.337 1.5h6.326c.216-.455.337-.963.337-1.5V2h-7zm3 6.35c0 .701-.478 1.236-1.011 1.492A3.5 3.5 0 0 0 4.5 13V5h7v8a3.5 3.5 0 0 0-2.989-3.158C7.978 9.586 7.5 9.052 7.5 8.35v-1.7z"/>
+                </svg> Saving...`;
+
+            try {
+                const newSnippetRef = push(snippetsRef);
+                await set(newSnippetRef, {
+                    title: title,
+                    code: code,
+                    createdAt: serverTimestamp()
+                });
+
+                snippetTitleInput.value = '';
+                snippetCodeInput.value = '';
+                showToast('Code saved successfully!', 'success');
+            } catch (error) {
+                console.error("Error saving to Firebase: ", error);
+                showToast('Failed to save code.', 'danger');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                        <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2zm2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2z"/>
+                    </svg>
+                    Save to Cloud`;
+            }
+        }
+
+        function loadSnippetsFromFirebase() {
+            snippetGridDiv.innerHTML = '<p class="loading-snippets">Loading codes...</p>';
+            onValue(snippetsRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    allSnippetsData = data;
+                } else {
+                    allSnippetsData = {};
+                }
+                renderSnippets(); 
+            }, (error) => {
+                console.error("Error loading data from Firebase: ", error);
+                snippetGridDiv.innerHTML = '<p class="no-snippets">Could not load data. Please try again.</p>';
+                showToast('Failed to load data.', 'danger');
+            });
+        }
+
+        function renderSnippets() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            snippetGridDiv.innerHTML = ''; 
+
+            if (typeof allSnippetsData !== 'object' || allSnippetsData === null) {
+                snippetGridDiv.innerHTML = '<p class="no-snippets">Data format error.</p>';
+                return;
+            }
+
+            const snippetsArray = Object.keys(allSnippetsData).map(key => ({
+                id: key,
+                ...allSnippetsData[key]
+            })).sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+
+            const filteredSnippets = snippetsArray.filter(snippet =>
+                snippet.title && typeof snippet.title === 'string' && snippet.title.toLowerCase().includes(searchTerm)
+            );
+
+            if (filteredSnippets.length === 0) {
+                const message = searchTerm ? 'No code matched your search.' : (Object.keys(allSnippetsData).length === 0 ? 'No code saved yet. Add one above!' : 'No code found for current filter.');
+                snippetGridDiv.innerHTML = `<p class="no-snippets">${message}</p>`;
+                return;
+            }
+
+            filteredSnippets.forEach(snippet => {
+                const card = document.createElement('div');
+                card.className = 'snippet-card';
+                card.setAttribute('data-id', snippet.id);
+                card.onclick = function(event) {
+                    const targetElement = event.target.closest('.icon-button.delete');
+                    if (targetElement) return;
+                    openModalWithCode(snippet);
+                };
+
+                const titleEl = document.createElement('h3');
+                titleEl.textContent = snippet.title || "No Title";
+                titleEl.title = snippet.title || "No Title";
+
+                const codePreview = document.createElement('p');
+                codePreview.className = 'code-preview';
+                const previewText = snippet.code && typeof snippet.code === 'string' ? snippet.code.substring(0, 150) + (snippet.code.length > 150 ? '...' : '') : "No code preview";
+                codePreview.textContent = previewText;
+
+                const cardActionsDiv = document.createElement('div');
+                cardActionsDiv.className = 'card-actions';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'button icon-button delete';
+                deleteButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                        <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                    </svg>`;
+                deleteButton.title = "Delete";
+                deleteButton.onclick = function(event) {
+                    event.stopPropagation();
+                    deleteSnippetFromFirebase(snippet.id);
+                };
+                
+                cardActionsDiv.appendChild(deleteButton);
+                card.appendChild(titleEl);
+                card.appendChild(codePreview);
+                card.appendChild(cardActionsDiv);
+                snippetGridDiv.appendChild(card);
+            });
+        }
+
+        function openModalWithCode(snippet) {
+            if (snippet && snippet.code) {
+                currentSnippetCodeForModalCopy = snippet.code;
+                modalTitleEl.textContent = snippet.title || "No Title";
+                modalCodeEl.textContent = snippet.code;
+                modalCopiedFeedback.textContent = '';
+                modalCopiedFeedback.style.color = 'var(--success-color)';
+                codeModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            } else {
+                showToast("Error displaying code.", "danger");
+            }
+        }
+
+        function closeModal() {
+            codeModal.style.display = 'none';
+            currentSnippetCodeForModalCopy = null;
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == codeModal) {
+                closeModal();
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape" && codeModal.style.display === 'block') {
+                closeModal();
+            }
+        });
+
+        modalCopyButton.onclick = function() {
+            if (currentSnippetCodeForModalCopy) {
+                copyToClipboard(currentSnippetCodeForModalCopy, this, modalCopiedFeedback);
+            }
+        };
+        
+        function copyToClipboard(text, buttonElement, feedbackElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                feedbackElement.textContent = 'Copied!';
+                feedbackElement.style.color = 'var(--success-color)';
+                setTimeout(() => { feedbackElement.textContent = ''; }, 2500);
+            }).catch(err => {
+                console.error('Error copying: ', err);
+                feedbackElement.textContent = 'Copy failed!';
+                feedbackElement.style.color = 'var(--danger-color)';
+                setTimeout(() => {
+                    feedbackElement.textContent = '';
+                    feedbackElement.style.color = 'var(--success-color)';
+                }, 2500);
+            });
+        }
+
+        async function deleteSnippetFromFirebase(snippetId) {
+            const enteredPassword = prompt('To delete this snippet, please enter the delete confirmation password:');
+
+            if (enteredPassword === null) { // User clicked Cancel or closed prompt
+                showToast('Deletion cancelled.', 'danger');
+                return;
+            }
+
+            if (enteredPassword === DELETE_ACTION_PASSWORD) {
+                try {
+                    await remove(ref(database, `snippets/${snippetId}`));
+                    showToast('Code deleted successfully.', 'success');
+                } catch (error) {
+                    console.error("Error deleting from Firebase: ", error);
+                    showToast('Failed to delete code. Server error.', 'danger');
+                }
+            } else {
+                showToast('Incorrect delete password. Deletion aborted.', 'danger');
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(toast)) { 
+                         document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>
